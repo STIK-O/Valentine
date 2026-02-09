@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Be My Valentine 💖</title>
+<style>
+* { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(-45deg, #ff758c, #ff7eb3, #fad0c4, #ffd1ff);
+  background-size: 400% 400%;
+  animation: gradientFlow 12s ease infinite;
+  overflow: hidden;
+  color: #fff;
+}
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.bg-heart {
+  position: fixed;
+  bottom: -30px;
+  font-size: 1.4rem;
+  animation: rise linear forwards;
+  pointer-events: none;
+  opacity: 0.8;
+  z-index: 1;
+}
+@keyframes rise {
+  from { transform: translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  to { transform: translateY(-110vh); opacity: 0; }
+}
+.card {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  padding: 2.5rem 2rem;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  border-radius: 28px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+  position: relative;
+  z-index: 10;
+}
+h1 { margin-top: 0; font-size: 2rem; }
+p { font-size: 1.1rem; margin-bottom: 2rem; }
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+button { border: none; padding: 0.8rem 1.6rem; font-size: 1rem; border-radius: 999px; cursor: pointer; transition: transform 0.2s; }
+button:hover { transform: scale(1.08); }
+.yes { background: #ff4d6d; color: #fff; }
+.no { background: rgba(255,255,255,0.9); color: #ff4d6d; position: relative; }
+.popup {
+  position: fixed;
+  max-width: 260px;
+  padding: 0.8rem 1.2rem;
+  background: rgba(255,255,255,0.95);
+  color: #ff4d6d;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+  z-index: 30;
+  pointer-events: none;
+}
+.music-container {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+.music-btn { background: rgba(255,255,255,0.25); color: #fff; font-size: 0.9rem; border-radius: 20px; padding: 0.6rem 1.2rem; cursor: pointer; }
+#musicInfo { font-size: 0.9rem; }
+/* Confetti */
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  top: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+input { width: 80%; font-size: 1rem; padding: 0.5rem; border-radius: 12px; border: none; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1 id="title"></h1>
+  <p id="question"></p>
+
+  <div class="buttons">
+    <button class="yes" id="yesBtn">Yes</button>
+    <button class="no" id="noBtn">No</button>
+  </div>
+
+  <div class="music-container">
+    <button class="music-btn" id="musicBtn">▶ Play music</button>
+    <div id="musicInfo"></div>
+  </div>
+  <audio id="audio"></audio>
+</div>
+
+<script>
+// Config
+const CONFIG = {
+  crushName: "Her Name",
+  question: "Will you be my Valentine?",
+  musicFile: "ROSE & Bruno Mars - APT. (Official Music Video).mp3",
+  formURL: "https://docs.google.com/forms/d/e/1FAIpQLSe0rTlJbENPFMSr2aDysBBA80yT-LvXrmrhOFQVPtQU2VQMRA/formResponse?entry.92481749={Q1}&entry.1502771199={Q2}&entry.447780710={Q3}"
+};
+
+// Setup
+document.getElementById('title').textContent = `Hi ${CONFIG.crushName}`;
+document.getElementById('question').textContent = CONFIG.question;
+
+// Music
+const audio = document.getElementById('audio');
+audio.src = CONFIG.musicFile;
+audio.loop = true;
+let isPlaying = false;
+const musicBtn = document.getElementById('musicBtn');
+const musicInfo = document.getElementById('musicInfo');
+musicBtn.addEventListener('click', ()=>{
+  if(!isPlaying){ audio.play(); isPlaying=true; musicBtn.textContent='⏸ Pause music'; }
+  else{ audio.pause(); isPlaying=false; musicBtn.textContent='▶ Play music'; }
+});
+audio.addEventListener('timeupdate', ()=>{
+  const c=Math.floor(audio.currentTime), d=Math.floor(audio.duration);
+  if(!isNaN(d)){
+    const format=t=>Math.floor(t/60)+':'+('0'+(t%60)).slice(-2);
+    musicInfo.textContent=`Playing: ${format(c)} / ${format(d)}`;
+  }
+});
+
+// Hearts background
+const hearts=['❤️','💖','💗','💘','💜','💙','💛'];
+setInterval(()=>{
+  const h=document.createElement('div');
+  h.className='bg-heart';
+  h.textContent=hearts[Math.floor(Math.random()*hearts.length)];
+  h.style.left=Math.random()*100+'vw';
+  h.style.fontSize=12+Math.random()*20+'px';
+  h.style.animationDuration=6+Math.random()*4+'s';
+  document.body.appendChild(h);
+  setTimeout(()=>h.remove(),10000);
+},400);
+
+// No button
+const noBtn=document.getElementById('noBtn');
+let popup=null,popupTimer=null;
+const messages=["Hey why are you pressing that","That button is not feeling loved","Plot twist: you meant YES","Why are you like this","The universe says no to NO","This is getting awkward","Please reconsider","That’s not very Valentine of you","I’m running out of places","Okay but imagine clicking YES"];
+let count=0;
+noBtn.addEventListener('click', ()=>{
+  moveNoNearCard();
+  showPopup(messages[count%messages.length]);
+  count++;
+});
+function moveNoNearCard(){
+  const cardRect=document.querySelector('.card').getBoundingClientRect();
+  const maxOffset=120;
+  const left=cardRect.left+cardRect.width/2+(Math.random()*maxOffset*2-maxOffset)-noBtn.offsetWidth/2;
+  const top=cardRect.top+(Math.random()*maxOffset*2-maxOffset);
+  noBtn.style.position='fixed';
+  noBtn.style.left=Math.min(Math.max(left,10),window.innerWidth-noBtn.offsetWidth-10)+'px';
+  noBtn.style.top=Math.min(Math.max(top,10),window.innerHeight-noBtn.offsetHeight-10)+'px';
+}
+function showPopup(text){
+  if(popup) popup.remove();
+  if(popupTimer) clearTimeout(popupTimer);
+  popup=document.createElement('div');
+  popup.className='popup';
+  popup.textContent=text;
+  const cardRect=document.querySelector('.card').getBoundingClientRect();
+  const popupTop=cardRect.top-80;
+  const popupLeft=Math.min(Math.max(cardRect.left+Math.random()*60,10),window.innerWidth-260);
+  popup.style.top=Math.max(popupTop,10)+'px';
+  popup.style.left=popupLeft+'px';
+  document.body.appendChild(popup);
+  popupTimer=setTimeout(()=>{popup.remove();popup=null;},10000);
+}
+
+// Yes button
+const yesBtn=document.getElementById('yesBtn');
+yesBtn.addEventListener('click', ()=>{
+  startCelebration();
+  setTimeout(()=>{ startMiniGame(); }, 2000);
+});
+
+// Celebration
+function startCelebration(){
+  for(let i=0;i<200;i++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    c.style.left=Math.random()*window.innerWidth+'px';
+    c.style.backgroundColor=['#ff4d6d','#ff758c','#ffb6c1','#ffd1dc'][Math.floor(Math.random()*4)];
+    c.style.animationDuration=(2+Math.random()*3)+'s';
+    document.body.appendChild(c);
+    c.animate([{transform:`translateY(0px)`},{transform:`translateY(${window.innerHeight+20}px)`}],{duration:2000+Math.random()*2000,easing:'linear'});
+    setTimeout(()=>c.remove(),4000);
+  }
+  document.getElementById('question').textContent='Yay! You clicked YES!';
+}
+
+// Mini-game (plain text answers)
+const gameQuestions=[
+  {q:'What do you want to do?', options:['Watch Movie','Play Video Game','Both'], type:'choice'},
+  {q:'What do you want to eat?', options:['JCO Alcapone','Lava Xiao Long Bao'], type:'choice'},
+  {q:'What\'s your favorite color?', type:'text'}
+];
+const gameAnswers=[];
+function startMiniGame(){ nextQuestion(0); }
+function nextQuestion(index){
+  const card=document.querySelector('.card');
+  card.querySelector('h1').textContent='';
+  card.querySelector('p').textContent=gameQuestions[index].q;
+  const btnDiv=card.querySelector('.buttons');
+  btnDiv.innerHTML='';
+  if(gameQuestions[index].type==='choice'){
+    gameQuestions[index].options.forEach(opt=>{
+      const b=document.createElement('button');
+      b.textContent=opt;
+      b.className='yes';
+      b.onclick=()=>{ gameAnswers.push(opt); index+1<gameQuestions.length?nextQuestion(index+1):submitGame(); };
+      btnDiv.appendChild(b);
+    });
+  }else if(gameQuestions[index].type==='text'){
+    const input=document.createElement('input');
+    input.type='text';
+    input.placeholder='Type here';
+    btnDiv.appendChild(input);
+    const submit=document.createElement('button');
+    submit.textContent='Submit';
+    submit.className='yes';
+    submit.onclick=()=>{
+      gameAnswers.push(input.value||'');
+      submitGame();
+    };
+    btnDiv.appendChild(submit);
+  }
+}
+
+// Submit to Google Form
+function sendToGoogleForm(q1,q2,q3){
+  const url = CONFIG.formURL.replace('{Q1}',encodeURIComponent(q1))
+                             .replace('{Q2}',encodeURIComponent(q2))
+                             .replace('{Q3}',encodeURIComponent(q3));
+  fetch(url,{method:'POST',mode:'no-cors'})
+    .then(()=>console.log('Answers submitted'))
+    .catch(e=>console.error(e));
+}
+
+function submitGame(){
+  sendToGoogleForm(gameAnswers[0],gameAnswers[1],gameAnswers[2]);
+  endGame();
+}
+
+function endGame(){
+  const card=document.querySelector('.card');
+  card.querySelector('h1').textContent='Thanks for playing!';
+  card.querySelector('p').textContent='Can’t wait for our Valentine adventure!';
+  card.querySelector('.buttons').innerHTML='';
+}
+</script>
+</body>
+</html>
